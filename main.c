@@ -18,11 +18,11 @@
 const char *CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 #define ALPHABET_SIZE 26
 
-#define FACTOR_LENGTH 8
+#define FACTOR_LENGTH 14
+
+int FACTOR[FACTOR_LENGTH] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
 const double FREQ[] = {8.34, 1.54, 2.73, 4.14, 12.60, 2.03, 1.92, 6.11, 6.71, 0.23, 0.87, 4.24, 2.53, 6.80, 7.70, 1.66, 0.09, 5.68, 6.11, 9.37, 2.85, 1.06, 2.34, 0.20, 2.04, 0.06}; 
-
-int FACTOR[FACTOR_LENGTH] = {2, 3, 4, 5, 6, 7, 8, 9};
 
 struct group {
 	int index;
