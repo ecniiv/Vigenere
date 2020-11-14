@@ -22,7 +22,8 @@ const char *CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 int FACTOR[FACTOR_LENGTH] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
-const double FREQ[] = {8.34, 1.54, 2.73, 4.14, 12.60, 2.03, 1.92, 6.11, 6.71, 0.23, 0.87, 4.24, 2.53, 6.80, 7.70, 1.66, 0.09, 5.68, 6.11, 9.37, 2.85, 1.06, 2.34, 0.20, 2.04, 0.06}; 
+const double EN_FREQ[] = {8.34, 1.54, 2.73, 4.14, 12.60, 2.03, 1.92, 6.11, 6.71, 0.23, 0.87, 4.24, 2.53, 6.80, 7.70, 1.66, 0.09, 5.68, 6.11, 9.37, 2.85, 1.06, 2.34, 0.20, 2.04, 0.06}; 
+const double FREQ[] = {9.42, 1.02,	2.64,	3.39, 15.87, 0.95, 1.04, 0.77, 8.41, 0.89, 0.00, 5.34, 3.24, 7.15, 5.14, 2.86, 1.06, 6.46, 7.90, 7.26, 6.24, 2.15, 0.00, 0.30, 0.24, 0.32};
 
 struct group {
 	int index;
@@ -191,9 +192,9 @@ void decrypt(char *filename, const char *key) {
 }
 
 /*
-char *decrypt(const char *str, const char *key) {
+char *decrypt(const char *str. const char *key) {
 	size_t key_length = strlen(key);
-	printf("Decrypt with key %s (%lu)\n", key, key_length);
+	printf("Decrypt with key %s (%lu)\n". key, key_length);
 
 	char *p = (char *) str;
 	char *q = malloc(strlen(str) * sizeof(char));
@@ -328,6 +329,9 @@ int main(int argc, char **argv) {
 		const char *plaintext = decrypt(argv[1], argv[3]);
 		print_row(plaintext);
 		*/
+	} else if ((argc == 4) && (strcmp(argv[2], "--kfile") == 0)) {
+		const char *key = read_cipher(argv[3]);
+		decrypt(argv[1], key);
 	} else {
 		const char *cipher = read_cipher(argv[1]);
 		print_row(cipher);
@@ -352,6 +356,7 @@ int main(int argc, char **argv) {
 		print_groups(nth_letters_group);
 		const char *key = test_decrypt_groups(nth_letters_group);
 		printf("[+] Find possible key: %s\n", key);
+		decrypt(argv[1], key);
 	}
 
   return EXIT_SUCCESS;
