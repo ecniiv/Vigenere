@@ -3,48 +3,22 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include "quick_sort.h"
-
-#define FUN_SUCCESS 0
-#define FUN_FAILURE -1
-
-#define KEY_SIZE 	128
-#define KEYS 			12
-#define PATTERN_LENGTH 3
-#define PATTERN_LENGTH_MAX 7
-
-#define BUF_SIZE 256
+#include "group.h"
 
 const char *CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-#define ALPHABET_SIZE 26
 
-#define FACTOR_LENGTH 14
-
-int FACTOR[FACTOR_LENGTH] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+int FACTOR[REPEATED_PATTERN_SIZE] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
 
 const double EN_FREQ[] = {8.34, 1.54, 2.73, 4.14, 12.60, 2.03, 1.92, 6.11, 6.71, 0.23, 0.87, 4.24, 2.53, 6.80, 7.70, 1.66, 0.09, 5.68, 6.11, 9.37, 2.85, 1.06, 2.34, 0.20, 2.04, 0.06}; 
-const double FREQ[] = {9.42, 1.02,	2.64,	3.39, 15.87, 0.95, 1.04, 0.77, 8.41, 0.89, 0.00, 5.34, 3.24, 7.15, 5.14, 2.86, 1.06, 6.46, 7.90, 7.26, 6.24, 2.15, 0.00, 0.30, 0.24, 0.32};
 
-struct group {
-	int index;
-	int length;
-	char *str;
-};
+const double FREQ[] = {9.42, 1.02,	2.64,	3.39, 15.87, 0.95, 1.04, 0.77, 8.41, 0.89, 0.00, 5.34, 3.24, 7.15, 5.14, 2.86, 1.06, 6.46, 7.90, 7.26, 6.24, 2.15, 0.00, 0.30, 0.24, 0.32};
 
 typedef struct group group;
 
-#define GROUP_SIZE sizeof(int) * 2 + sizeof(char) * BUF_SIZE
-
-struct groups {
-	int n_group;
-	group list[PATTERN_LENGTH_MAX];
-};
-
 typedef struct groups groups;
 
-
-void test_prim(int offset) {                                   		\
-	for (int i = 0; i < FACTOR_LENGTH; i++) {
+void test_prim(int offset, int min_key_length, int max_key_length) {                                   		\
+	for (int i = min_key_length; i < max_key_length; i++) {
 		printf("\t%c", (offset % FACTOR[i] == 0) ? 'x' : ' ');
 	}
 	printf("\n");
@@ -54,17 +28,26 @@ int int_compar(const int *x1, const int *x2) {
   return (*x1 < *x2) - (*x1 > *x2);
 }
 
-void print_factors() {
-	printf("\t\t\t\t\t\t\t");
-	for (int i = 0; i < FACTOR_LENGTH; i++) {
-		printf("\t%d", FACTOR[i]);
-	}
-	printf("\n");
-	printf("\t\t\t\t\t\t\t");
-	for (int i = 0; i < FACTOR_LENGTH; i++) {
+void print_sep(int min_key_length, int max_key_length) {
+	printf("\t\t\t\t\t");
+	for (int i = min_key_length; i < max_key_length; i++) {
 		printf("\t|");
 	}
 	printf("\n");
+}
+
+void print_sizes(int end, int min_key_length, int max_key_length) {
+	if (end == 1) {
+		print_sep(min_key_length, max_key_length);
+	}
+	printf("[+] Possible key size: \t\t\t");
+	for (int i = min_key_length; i < max_key_length; i++) {
+		printf("\t%d", FACTOR[i]);
+	}
+	printf("\n");
+	if (end == 0) {
+		print_sep(min_key_length, max_key_length);
+	}
 }
 
 void frequency(const char *str) {
@@ -77,7 +60,6 @@ void frequency(const char *str) {
 		freq[*p - 'A']++;
 		p++;
 	}
-	//quick_sort(freq, sizeof freq / sizeof *freq, sizeof *freq, (int (*) (const void *, const void *)) int_compar);
 	int c;
 	for (int i = 0; i < ALPHABET_SIZE; i++) {
 		c = 'A' + i;
@@ -134,7 +116,7 @@ void print_row(const char *str) {
 	printf("\n************\n\n");
 }
 
-int guess_key(const char *str, size_t pattern_length) {
+int guess_key(const char *str, size_t pattern_length, size_t min_key_length, size_t max_key_length) {
 	char pattern[pattern_length + 1];
 	strncpy(pattern, str, pattern_length);
 	pattern[pattern_length] = '\0';
@@ -145,11 +127,11 @@ int guess_key(const char *str, size_t pattern_length) {
 		return -1;
 	}
 	int offset = (int) (result - str) + 1;
-	if ((offset <= 1) || (offset > KEY_SIZE)) {
+	if ((offset <= 1) || (offset > REPEATED_PATTERN_SIZE)) {
 		return -1;
 	}
-	printf("[+] Found possible keys starting by %s \t of length %d", pattern, offset);
-	test_prim(offset);
+	printf("[+] Repeated pattern %8s \t offset %d", pattern, offset);
+	test_prim(offset, min_key_length, max_key_length);
 	return offset;
 }
 
@@ -189,68 +171,6 @@ void decrypt(char *filename, const char *key) {
 		perror("[-] fclose");
 		return;
 	}
-}
-
-/*
-char *decrypt(const char *str. const char *key) {
-	size_t key_length = strlen(key);
-	printf("Decrypt with key %s (%lu)\n". key, key_length);
-
-	char *p = (char *) str;
-	char *q = malloc(strlen(str) * sizeof(char));
-	size_t i = 0;
-	int c;
-	int k;
-	int e;
-	while (*p != '\0') {
-		c = (int) *p - 'A';
-		k = (int) key[i % key_length] - 'A';
-		e = (c - k) % 26;
-		if (e < 0) {
-			e = 26 - (-e);
-		}
-		e = e + 'A';
-		q[i] = (char) e;
-		i++;
-		p++;
-	}
-
-	return q;
-}
-*/
-
-group *group_init(int i) {
-	group *g = malloc(sizeof(g));
-	if (g == NULL) {
-		return NULL;
-	}
-	g -> index = i;
-	g -> length = 0;
-	g -> str = malloc(1000 * sizeof(char));
-	return g;
-}
-
-groups *split_in_groups_of_length(int length, const char *str) {
-	size_t groups_size = GROUP_SIZE * (size_t) length + sizeof(int);
-	groups *groups = malloc(groups_size);
-	groups -> n_group = length;
-	for (int i = 0; i < length; i++) {
-		group *g = group_init(i);
-		groups -> list[i] = *g;
-	}
-
-	char *p = (char *) str;
-	int i = 0;
-	while (*p != '\0') {
-		printf("%c", *p);
-		int index = (groups -> list[i % length]).length;
-		(groups -> list[i % length]).str[index] = *p;
-		(groups -> list[i % length]).length++;
-		p++;
-		i++;
-	}
-	printf("\n");
-	return groups;
 }
 
 void print_groups(const groups *nth_letters_group) {
@@ -320,44 +240,58 @@ char *test_decrypt_groups(groups *nth_letters_group) {
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    printf("[-] Usage : %s <file>\n", argv[0]);
+    printf("[-] Usage : %s <file> [--min-key-length] [--max-key-length]\n", argv[0]);
     return EXIT_FAILURE;
   } 
-	if ((argc == 4) && (strcmp(argv[2], "--key") == 0)) {
+	char *key = "";
+	char *kfile = "";
+	int max_key_length = KEY_SIZE;
+	int min_key_length = 1;
+	for (int i = 0; i < argc; i++) {
+		char *arg = argv[i];
+		if (strcmp(arg, "--key") == 0) {
+			key = argv[i + 1];
+		}
+		if (strcmp(arg, "--kfile") == 0) {
+			kfile = argv[i + 1];
+		}
+		if (strcmp(arg, "--max-key-length") == 0) {
+			max_key_length = atoi(argv[i + 1]);
+		}
+		if (strcmp(arg, "--min-key-length") == 0) {
+			min_key_length = atoi(argv[i + 1]) - 1;
+		}
+	}
+	if (strcmp(key, "") != 0) {
 		decrypt(argv[1], argv[3]);
-		/*
-		const char *plaintext = decrypt(argv[1], argv[3]);
-		print_row(plaintext);
-		*/
-	} else if ((argc == 4) && (strcmp(argv[2], "--kfile") == 0)) {
+	} else if (strcmp(kfile, "") != 0) {
 		const char *key = read_cipher(argv[3]);
 		decrypt(argv[1], key);
 	} else {
 		const char *cipher = read_cipher(argv[1]);
 		print_row(cipher);
-		print_factors();
+		print_sizes(0, min_key_length, max_key_length);
 		const char *p = cipher;
 		size_t pattern_length = PATTERN_LENGTH;
 		while (pattern_length < PATTERN_LENGTH_MAX) {
 			p = cipher;
 			while (*p != '\0') {
-				guess_key(p, pattern_length);
+				guess_key(p, pattern_length, min_key_length, max_key_length);
 				p++;
 			}
 			pattern_length += 1;
 		}
-		
-		//frequency(cipher);
+		print_sizes(1, min_key_length, max_key_length);
 
 		int key_length = 0;
 		printf("[+] Key length to try: ");
 		scanf("%d", &key_length);
+
 		groups *nth_letters_group = split_in_groups_of_length(key_length, cipher);
 		print_groups(nth_letters_group);
+
 		const char *key = test_decrypt_groups(nth_letters_group);
-		printf("[+] Find possible key: %s\n", key);
+		printf("[+] Possible key: %s\n", key);
 		decrypt(argv[1], key);
 	}
-
-  return EXIT_SUCCESS;
 }
