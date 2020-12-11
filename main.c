@@ -240,7 +240,7 @@ char *test_decrypt_groups(groups *nth_letters_group) {
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    printf("[-] Usage : %s <file> [--min-key-length] [--max-key-length]\n", argv[0]);
+    printf("[-] Usage : %s <file> [--key] [--kfile] [--min-key-length] [--max-key-length]\n", argv[0]);
     return EXIT_FAILURE;
   } 
 	char *key = "";
