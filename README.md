@@ -6,7 +6,7 @@ Based on the Kasiski examination, the program consists of looking for many repet
 
 
 ```
-./main <file> [--key] [--kfile] [--min-key-length] [--max-key-length]
+./main <file> [--key | --kfile] [--min-key-length] [--max-key-length]
 ```
 
 # Examples
